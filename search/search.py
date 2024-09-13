@@ -20,12 +20,11 @@ Pacman agents (in searchAgents.py).
 import util
 
 class Node:
-
-    def __init__(self, position, parent):
-        self.position = position
+    def __init__(self, state, parent, direction):
+        self.state = state
         self.parent = parent
-        self.goal = False
-        self.children = []
+        self.direction = direction
+        
 
 
 class SearchProblem:
@@ -84,13 +83,13 @@ def tinyMazeSearch(problem):
 def dfsHelper(visitedNodes, node, problem):
     node_in_visitedNodes = False
     for i in visitedNodes:
-        if i.position == node.position:
+        if i.state == node.state:
             node_in_visitedNodes = True
     if not node_in_visitedNodes:
         #print(visitedNodes)
         visitedNodes.add(node)
-        for n in problem.getSuccessors(node.position):
-            child = Node(n[0], node)
+        for n in problem.getSuccessors(node.state):
+            child = Node(n[0], node, None)
             dfsHelper(visitedNodes, child, problem)
 
 
@@ -114,11 +113,19 @@ def depthFirstSearch(problem):
     print "Start:", problem.getStartState()
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
+
+
+
+
+
+
+
+
     visitedNodes = set()
-    dfsHelper(visitedNodes, Node(problem.getStartState(), None), problem)
+    dfsHelper(visitedNodes, Node(problem.getStartState(), None, None), problem)
     order = []
     for i in visitedNodes:
-        if problem.isGoalState(i.position):
+        if problem.isGoalState(i.state):
             p = i
             while p is not None:
                 order.append(p)
@@ -129,8 +136,8 @@ def depthFirstSearch(problem):
         if i+1 > len(order)-1:
             break
         else:
-            for j in problem.getSuccessors(order[i].position):
-                if j[0] == order[i+1].position:
+            for j in problem.getSuccessors(order[i].state):
+                if j[0] == order[i+1].state:
                     if j[1] == "North":
                         path.append(Directions.NORTH)
                     elif j[1] == "South":
@@ -147,9 +154,48 @@ def depthFirstSearch(problem):
     #print "Start's successors:", problem.getSuccessors(problem.getStartState())
     util.raiseNotDefined()
 
-def breadthFirstSearch(problem):
+def bfsHelper(problem):
+    from util import Queue
     """Search the shallowest nodes in the search tree first."""
-    
+    node = Node(problem.getStartState(), None, None)
+    if problem.isGoalState(node.state):
+        return node
+    frontier = Queue()
+    frontier.push(node)
+    reached = [problem.getStartState()]
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        for i in problem.getSuccessors(node.state):
+            s = i[0]
+            if problem.isGoalState(s):
+                newNode = Node(i[0], node, i[1])
+                return newNode
+            if not s in reached:
+                newNode = Node(i[0], node, i[1])
+                frontier.push(newNode)
+                reached.append(s)
+    print(frontier)
+    print(reached)
+
+def breadthFirstSearch(problem):
+    from game import Directions
+    path = []
+    node = bfsHelper(problem)
+    if node:
+        while node.parent is not None:
+            if node.direction == "North":
+              path.append(Directions.NORTH)
+            elif node.direction == "South":
+                path.append(Directions.SOUTH)
+            elif node.direction == "East":
+                path.append(Directions.EAST)
+            elif node.direction == "West":
+                path.append(Directions.WEST)
+            
+            node = node.parent
+    return path[::-1] #reverse order
+
+
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
