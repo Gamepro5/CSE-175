@@ -20,10 +20,11 @@ Pacman agents (in searchAgents.py).
 import util
 
 class Node:
-    def __init__(self, state, parent, direction):
+    def __init__(self, state, parent, direction, cost=0):
         self.state = state
         self.parent = parent
         self.direction = direction
+        self.cost = cost
         
 
 
@@ -198,9 +199,29 @@ def breadthFirstSearch(problem):
 
     util.raiseNotDefined()
 
+def bestFirstSearch(problem, f):
+    from util import Queue
+    node = Node(problem.getStartState(), None, None, 0)
+    frontier = util.PriorityQueueWithFunction(f)
+    frontier.push(node)
+    reached = {problem.getStartState(): node}
+    while (not frontier.isEmpty()):
+        node = frontier.pop()
+        if problem.isGoalState(node.state):
+            return node
+        
+        for child in problem.getSucessors(node.state):
+            newNode = Node(child[0], node, child[1])
+            s = newNode.state
+            if s in reached.keys() or newNode.cost < reached[s].cost:
+                reached[s] = newNode
+                frontier.push(child)
+    return False #failure
+                
+
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
+    bestFirstSearch(problem, )
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
