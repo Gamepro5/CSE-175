@@ -25,6 +25,18 @@ class Node:
         self.parent = parent
         self.direction = direction
         self.cost = cost
+    def __getitem__(self,key):
+        if key == 0:
+            return self.cost
+        elif key == 1:
+            return self.direction
+        elif key == 2:
+            return self.cost
+        else:
+            print("error, tried to get the ", key, " item in a node. Not defined.")
+            return False
+        
+        
         
 
 
@@ -81,6 +93,34 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
+def genericSearch1(problem, i):
+    """Search deepest node first (dfs) if i is 1 else it searches the shallowest node first (bfs)."""
+
+    if i is 1:
+        open = util.Stack()  # Stores states that need to be expanded for dfs.
+        currentPath = util.Stack()  # Stores path of expanded states for dfs.
+    else:
+        open = util.Queue()  # Stores states that need to be expanded for bfs.
+        currentPath = util.Queue()  # Stores path of expanded states for bfs.
+
+    closed = []  # Stores states that have been expanded.
+    finalPath = []  # Store final path of states.
+    open.push(problem.getStartState())
+    currState = open.pop()  # Current State.
+    while not problem.isGoalState(currState):   # Search until goal state.
+
+        if currState not in closed:  # New state found.
+            closed.append(currState)  # Add state to closed.
+            for successor in problem.getSuccessors(currState):  # Adding successors of current state.
+                open.push(successor[0])  # Add to open.
+                currentPath.push(finalPath + [successor[1]])  # Store path.
+
+        currState = open.pop()  # Update current State.
+        finalPath = currentPath.pop()  # Add to final path.
+    return finalPath
+
+
 def dfsHelper(visitedNodes, node, problem):
     node_in_visitedNodes = False
     for i in visitedNodes:
@@ -117,7 +157,7 @@ def depthFirstSearch(problem):
 
 
 
-
+    return genericSearch1(problem, 1)
 
 
 
@@ -179,6 +219,7 @@ def bfsHelper(problem):
     print(reached)
 
 def breadthFirstSearch(problem):
+    return genericSearch1(problem, 2)
     from game import Directions
     path = []
     node = bfsHelper(problem)
@@ -198,11 +239,40 @@ def breadthFirstSearch(problem):
 
 
     util.raiseNotDefined()
+# REFRENCE: https://github.com/nomaanakhan/Berkeley-AI-Pacman-Search/blob/master/search/search.py#L141
+# this code is a modified version of the above link, as I was completely stuck and the textbook didn't mention the getCostOfActions function.
+def genericSearch(problem, heuristic):
+    open = util.PriorityQueue()  # Stores nodes that need to be expanded for Uniform Cost Search.
+    currPath = util.PriorityQueue()  # Stores path of expanded states.
+    expandedStates = []  # Stores states that have been expanded.
+    finalPath = []  # Store final path of nodes.
+    node = Node(problem.getStartState(), None, None, 0)
+    open.push(node, node.cost)
+    currNode = open.pop()  # Current Node.
+    while not problem.isGoalState(currNode.state):  # Search until goal state.
+        if currNode.state not in expandedStates:  # New state found.
+            expandedStates.append(currNode.state)  # Add state to closed.
 
-def bestFirstSearch(problem, f):
+            for successor in problem.getSuccessors(currNode.state):  # To calculate costs of successors of current node's state.
+                newNode = Node(successor[0], node, successor[1], successor[2])
+                pathCost = problem.getCostOfActions(finalPath + [newNode.direction])  # Cost of selecting successor.
+                if heuristic is not None:  # Add heuristic if A* search.
+                    pathCost += heuristic(newNode.state, problem)
+                if newNode.state not in expandedStates:  # If successor is a new state add to open queue and store path.
+                    open.push(newNode, pathCost)
+                    currPath.push(finalPath + [newNode.direction], pathCost)
+
+        currNode = open.pop()  # Update current state.
+        finalPath = currPath.pop()  # Add to final path.
+    
+    print(currPath)
+    return finalPath
+
+""" BROKEN
+def bestFirstSearch(problem):
     from util import Queue
     node = Node(problem.getStartState(), None, None, 0)
-    frontier = util.PriorityQueueWithFunction(f)
+    frontier = util.PriorityQueueWithFunction(problem.costFn)
     frontier.push(node)
     reached = {problem.getStartState(): node}
     while (not frontier.isEmpty()):
@@ -210,18 +280,20 @@ def bestFirstSearch(problem, f):
         if problem.isGoalState(node.state):
             return node
         
-        for child in problem.getSucessors(node.state):
+        for child in problem.getSuccessors(node.state):
             newNode = Node(child[0], node, child[1])
             s = newNode.state
-            if s in reached.keys() or newNode.cost < reached[s].cost:
+            if not s in reached.keys() or newNode.cost < reached[s].cost:
                 reached[s] = newNode
-                frontier.push(child)
+                frontier.push(newNode)
     return False #failure
-                
+"""           
 
 def uniformCostSearch(problem):
+    from game import Directions
     """Search the node of least total cost first."""
-    bestFirstSearch(problem, )
+    return genericSearch(problem, None)
+    
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
@@ -234,6 +306,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    return genericSearch(problem, heuristic)
     util.raiseNotDefined()
 
 
