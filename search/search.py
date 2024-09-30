@@ -92,7 +92,7 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 
-
+# REFRENCE: https://github.com/nomaanakhan/Berkeley-AI-Pacman-Search/blob/master/search
 def genericSearch1(problem, depthfirst):
 
     if depthfirst is True:
@@ -102,22 +102,22 @@ def genericSearch1(problem, depthfirst):
         open = util.Queue()  # Stores states that need to be expanded for bfs
         currentPath = util.Queue()  # Stores path of expanded states for bfs
 
-    expandedStates = []  # Stores nodes that have been expanded
+    expandedStates = []  # Stores states that have been expanded
     finalPath = []  # Store final path of states
 
     open.push(Node(problem.getStartState(), None, None, 0))
-    currNode = open.pop()  # Current Node
-    currState = currNode.state # Current State
+    currNode = open.pop()
+    currState = currNode.state
     while not problem.isGoalState(currState):   # Search until goal state
         if currState not in expandedStates:  # New state found
-            expandedStates.append(currState)  # Add state to closed
+            expandedStates.append(currState) 
             for successor in problem.getSuccessors(currState):  # Adding successors of current state
                 newNode = Node(successor[0], currNode, successor[1], successor[2])
-                open.push(newNode)  # Add to open.
+                open.push(newNode)
                 currentPath.push(finalPath + [newNode.direction])  # Store path
-        currNode = open.pop()  # Update current Node
-        currState = currNode.state # Update current State
-        finalPath = currentPath.pop()  # Add to final path
+        currNode = open.pop()
+        currState = currNode.state
+        finalPath = currentPath.pop()
     return finalPath
 
 
@@ -127,26 +127,27 @@ def genericSearch1(problem, depthfirst):
 def genericSearch(problem, heuristic):
     open = util.PriorityQueue()  # Stores nodes that need to be expanded for Uniform Cost Search.
     currPath = util.PriorityQueue()  # Stores path of expanded states.
-    expandedNodes = []  # Stores states that have been expanded.
+    expandedStates = []  # Stores states that have been expanded.
     finalPath = []  # Store final path of nodes.
     node = Node(problem.getStartState(), None, None, 0)
     open.push(node, node.cost)
-    currNode = open.pop()  # Current Node.
-    while not problem.isGoalState(currNode.state):  # Search until goal state.
-        if currNode not in expandedNodes:  # New state found.
-            expandedNodes.append(currNode.state)  # Add state to closed.
-
-            for successor in problem.getSuccessors(currNode.state):  # To calculate costs of successors of current node's state.
+    currNode = open.pop() 
+    currState = currNode.state
+    while not problem.isGoalState(currState):  # Search until goal state.
+        if currState not in expandedStates:  # New state found.
+            expandedStates.append(currState)
+            for successor in problem.getSuccessors(currState):  # To calculate costs of successors of current node's state.
                 newNode = Node(successor[0], node, successor[1], successor[2])
                 pathCost = problem.getCostOfActions(finalPath + [newNode.direction])  # Cost of selecting successor.
                 if heuristic is not None:  # Add heuristic if A* search.
                     pathCost += heuristic(newNode.state, problem)
-                if newNode.state not in expandedNodes:  # If successor is a new state add to open queue and store path.
+                if newNode.state not in expandedStates:  # If successor is a new state add to open queue and store path.
                     open.push(newNode, pathCost)
-                    currPath.push(finalPath + [newNode.direction], pathCost)
+                    currPath.push(finalPath + [newNode.direction], pathCost)  # Store path
 
-        currNode = open.pop()  # Update current state.
-        finalPath = currPath.pop()  # Add to final path.
+        currNode = open.pop()
+        currState = currNode.state
+        finalPath = currPath.pop()
     
     print(currPath)
     return finalPath

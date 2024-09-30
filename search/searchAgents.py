@@ -272,7 +272,7 @@ class CornersProblem(search.SearchProblem):
 
     You must select a suitable state space and successor function
     """
-
+# REFRENCE: https://github.com/nomaanakhan/Berkeley-AI-Pacman-Search/blob/master/search
     def __init__(self, startingGameState):
         """
         Stores the walls, pacman's starting position and corners.
@@ -288,7 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        
+        self.startingGameState = startingGameState #we need to be able to get this later for passing to the mazeDistance function at the very bottom of this file. this function was provided in the skeleton code.
 
     def getStartState(self):
         """
@@ -302,13 +302,11 @@ class CornersProblem(search.SearchProblem):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        currentPos = state["position"]  # Current position.
-        visitedCorners = state["visitedCorners"]  # Visited corners.
-        if currentPos in self.corners:  # If position is corner and add unvisited corners to list.
-            if currentPos not in visitedCorners:
-                visitedCorners.append(currentPos)
-            return len(visitedCorners) == 4
-        return False
+        visitedCorners = state["visitedCorners"]
+        if len(visitedCorners) == 4: #goal state. all 4 corners are visited
+            return True
+        else:
+            return False
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -330,13 +328,13 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
+            nextState = (nextx, nexty)
+
             if not hitsWall:
-                visitedCorners = list(state["visitedCorners"])  # Visited Corners
-                nextState = (nextx, nexty)
-                if nextState in self.corners and nextState not in visitedCorners:  # If state is a corner and not
-                    # visited before then add it visited corners list.
-                    visitedCorners.append(nextState)
-                successors.append(({"position": nextState, "visitedCorners": visitedCorners}, action, 1))
+                visitedCorners = list(state["visitedCorners"]) #copies the visited corners from the current state so we can add to it if needed
+                if nextState in self.corners and nextState not in visitedCorners:  # If state is a corner and we havented visited it before
+                    visitedCorners.append(nextState) #add it to the visited corners
+                successors.append(({"position": nextState, "visitedCorners": visitedCorners}, action, 1)) #adds a successor that has the visited corners of the predecessor AND any the new corner if this successor is in a new corner.
                 
         
         self._expanded += 1 # DO NOT CHANGE
@@ -357,6 +355,7 @@ class CornersProblem(search.SearchProblem):
 
 
 def cornersHeuristic(state, problem):
+    import math
     """
     A heuristic for the CornersProblem that you defined.
 
@@ -372,8 +371,23 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    currentPos = state["position"]  # Current position.
+    visitedCorners = state["visitedCorners"]  # Visited corners.
+
+    maxDistance = 0
+    
+    for corner in corners:
+        if corner not in visitedCorners:
+            p1 = currentPos
+            p2 = corner
+            other = math.sqrt(math.pow((p2[0]-p1[1]),2)+math.pow((p2[1]-p1[0]),2))
+            euclidean = ( (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 ) ** 0.5
+            mannhattan = abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+            distance = max(euclidean, mannhattan, other) #math.sqrt(math.pow((p2[0]-p1[1]),2)+math.pow((p2[1]-p1[0]),2))
+            if distance > maxDistance:
+                maxDistance = distance
+
+    return maxDistance
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
