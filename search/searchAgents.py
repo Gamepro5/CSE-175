@@ -518,7 +518,26 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
+        
+        foodList = food.asList()
+    
+        open = util.Queue()  # Stores states that need to be expanded for bfs
+        currentPath = util.Queue()  # Stores path of expanded states for bfs
+
+        expandedStates = []  # Stores states that have been expanded
+        finalPath = []  # Store final path of states
+
+        open.push(startPosition)
+        currState = open.pop()
+        while not (currState in foodList):   # Search until goal state (custom goal state where th goal state is "i found a peice of food.")
+            if currState not in expandedStates:  # New state found
+                expandedStates.append(currState) 
+                for successor in problem.getSuccessors(currState):  # Adding successors of current state
+                    open.push(successor[0])
+                    currentPath.push(finalPath + [successor[1]])  # Store path
+            currState = open.pop()
+            finalPath = currentPath.pop()
+        return finalPath
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
