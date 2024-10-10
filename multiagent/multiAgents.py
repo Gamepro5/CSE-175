@@ -76,7 +76,6 @@ class ReflexAgent(Agent):
         food = currentGameState.getFood().asList()
 
         "*** YOUR CODE HERE ***"
-        print(len(food))
         for ghostState in newGhostStates:
             if ghostState.getPosition() == newPos:
               return -100 #don't go there!!
@@ -92,7 +91,6 @@ class ReflexAgent(Agent):
           p2 = newPos
           p1 = i
           distance += 1.0/float(abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]))
-        print(action, distance)
         return distance
         
 
