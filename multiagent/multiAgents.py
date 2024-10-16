@@ -147,6 +147,105 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
+
+        def terminalState(gameState, agentID, depth):
+          actions=gameState.getLegalActions(agentID)
+          if len(actions)==0 or gameState.isWin() or gameState.isLose() or depth==self.depth: # terminal state
+              return True
+          return False
+        def minimax(gameState, agentID, depth):
+          value, move = maxValue(gameState, agentID, depth)
+          return move
+        def maxValue(gameState, agentID, depth):
+          if terminalState(gameState, agentID, depth):
+            return(self.evaluationFunction(gameState),None)
+          v = -float("inf")
+          move = None
+          for action in gameState.getLegalActions(agentID):
+            v2, action2 = minValue(gameState.generateSuccessor(agentID,action), 1, depth)
+            if v2 > v:
+              v, move = v2, action
+          return v, move
+        def minValue(gameState, agentID, depth):
+          if terminalState(gameState, agentID, depth):
+            return(self.evaluationFunction(gameState),None)
+          v = float("inf")
+          move = None
+          for action in gameState.getLegalActions(agentID):
+            v2 = None
+            if(agentID==gameState.getNumAgents() -1):
+              v2, action2 = maxValue(gameState.generateSuccessor(agentID,action), 0, depth+1)
+            else:
+              v2, action2 = minValue(gameState.generateSuccessor(agentID,action), agentID+1, depth)
+            if v2 < v:
+              v, move = v2, action
+          return v, move
+
+        return minimax(gameState, 0, 0)
+        """
+        def terminalState(gameState, agentID, depth):
+          actions=gameState.getLegalActions(agentID)
+          if len(actions)==0 or gameState.isWin() or gameState.isLose() or depth==self.depth: # terminal state
+              return True
+          return False
+        
+        def maxValue(gameState, agentID, depth):
+          if terminalState(gameState,agentID,depth): # terminal state
+            return(self.evaluationFunction(gameState),None)
+          v = -(float("inf")) #negative infinity
+          actions=gameState.getLegalActions(agentID)
+          resultAction = None
+          for action in actions:
+            sucsValue = minValue(gameState.generateSuccessor(agentID,action), agentID, depth+1)
+            if sucsValue[0]>v:
+                resultAction=action
+            v=max(v,sucsValue[0])
+          return (v,action)
+        
+        def minValue(gameState, agentID, depth):
+          if terminalState(gameState,agentID,depth): # terminal state
+            return(self.evaluationFunction(gameState),None)
+          v = (float("inf")) #positive infinity
+          actions=gameState.getLegalActions(agentID)
+          resultAction = None
+          for action in actions:
+            sucsValue = maxValue(gameState.generateSuccessor(agentID,action), agentID, depth+1)
+            if sucsValue[0]<v:
+                resultAction=action
+            v=min(v,sucsValue[0])
+          return (v,action)
+
+        def minimax(gameState, agentID, depth):
+          return minValue(gameState,agentID,depth)
+          """
+        """
+        def minimax(gameState, agentID, depth):
+          actions=gameState.getLegalActions(agentID)
+          if terminalState(gameState,agentID,depth): # terminal state
+            return(self.evaluationFunction(gameState),None)
+          if(agentID==gameState.getNumAgents() -1):
+            v = -(float("inf")) #negative infinity
+            resultAction=None
+            for action in actions:
+              sucsValue=minimax(gameState.generateSuccessor(agentID,action),agentID,depth + 1)
+              sucsValue = sucsValue[0]
+              if sucsValue<v:
+                v=sucsValue
+                resultAction=action
+            return(v,resultAction)
+          else:
+            v = (float("inf")) #positive infinity
+            resultAction=None
+            for action in actions:
+              sucsValue=minimax(gameState.generateSuccessor(agentID,action),agentID+1,depth)
+              sucsValue = sucsValue[0]
+              if sucsValue>v:
+                v=sucsValue
+                resultAction=action
+            return(v,resultAction)
+        
+        return minimax(gameState, 0, 0)[1]
+        """
         util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
